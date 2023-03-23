@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # © Copyright EnterpriseDB UK Limited 2015-2023 - All rights reserved.
-"""Trusted Platform Architectures module."""
+"""Trusted Platform Architect module."""
 
 from tpaexec.architectures import configure
 
