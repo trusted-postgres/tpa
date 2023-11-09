@@ -103,20 +103,43 @@
     initialise_harp|bool
     and 'harp-proxy' in role
 
-- name: Install HARP manager configuration file
-  template:
-    src: harp2.config.j2
-    dest: "{{ harp_directory }}/config.yml"
-    owner: "{{ postgres_user }}"
-    group: "{{ postgres_group }}"
-    mode: 0644
-  vars:
-    pgbouncer_bin_dirs:
-      Debian: /usr/sbin
-      RedHat: /usr/bin
-    pgbouncer_bin_dir: "{{ pgbouncer_bin_dirs[ansible_os_family] }}"
-    config_for: 'manager'
-  notify: Note HARP restart required
+- name: Setting up HARP manager
+  block:
+
+  - name: Read current configuration file if exists
+    shell: "cat {{ harp_directory }}/config.yml"
+    register: config_yml
+    ignore_errors: true
+
+  - name: Check if we have set harp_manager_user already
+    assert:
+      that:
+        - "'{{ user_to_check }}' in '{{ item }}'"
+      fail_msg: >
+        We cannot change the manager user on existing clusters, please set
+        "harp_user_manager" in config.yml to use current user defined in "{{ item }}"
+    vars:
+      harp_file_struct: "{{ config_yml.stdout | from_yaml }}"
+      endpoints: "{{ harp_file_struct.dcs.endpoints }}"
+      user_to_check: "user={{ harp_manager_user }}"
+    loop: "{{ endpoints }}"
+    when: config_yml.rc == 0
+
+  - name: Install HARP manager configuration file
+    template:
+      src: harp2.config.j2
+      dest: "{{ harp_directory }}/config.yml"
+      owner: "{{ postgres_user }}"
+      group: "{{ postgres_group }}"
+      mode: 0644
+    vars:
+      pgbouncer_bin_dirs:
+        Debian: /usr/sbin
+        RedHat: /usr/bin
+      pgbouncer_bin_dir: "{{ pgbouncer_bin_dirs[ansible_os_family] }}"
+      config_for: 'manager'
+    notify: Note HARP restart required
+
   when: >
     initialise_harp|bool
     and 'postgres' in role
