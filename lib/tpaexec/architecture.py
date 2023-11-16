@@ -838,10 +838,22 @@ class Architecture(object):
         """
         pass
 
+    def _define_default_variables(self, cluster_vars):
+        """
+        Variables we use by default but can be overriden.
+        """
+
+        default_variables = { 'postgres_log_file' : '/var/log/postgres/postgres.log' }
+        for var_name in default_variables.keys():
+            cluster_vars[var_name] = default_variables.get(var_name)
+
     def _init_cluster_vars(self, cluster_vars):
         """
         Makes changes to cluster_vars applicable across architectures
         """
+
+        self._define_default_variables(cluster_vars)
+
         preferred_python_version = self.args["image"].get(
             "preferred_python_version", "python3"
         )
