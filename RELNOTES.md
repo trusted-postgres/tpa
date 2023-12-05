@@ -16,6 +16,12 @@
   version, if applicable. `tpaexec deploy` will then apply these changes
   to the servers in the cluster.
 
+- TPA-85 Support Keyring for cluster vault password storage
+
+  Add support for system keyring to store cluster vault password by default.
+  This leverage python keyring module to avoid storing cluster vault password
+  in a plaintext file. This will not be enabled on already existing cluster.
+
 ### Minor changes
 
 - TPA-626 Improve CAMO commit_scope generation during reconfigure
